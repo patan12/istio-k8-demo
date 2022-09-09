@@ -1,0 +1,79 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+
+plugins {
+	id 'com.bmuschko.docker-remote-api' version '6.7.0'
+	id 'org.springframework.boot' version '2.7.2'
+	id 'io.spring.dependency-management' version '1.0.12.RELEASE'
+	id 'java'
+}
+
+ext {
+	set('springCloudVersion', "2021.0.1")
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	gradlePluginPortal()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+//demo-0.0.1-SNAPSHOT.jar
+task createDockerfile(type: Dockerfile) {
+	destFile = project.file('build/docker/Dockerfile')
+	from 'openjdk:8-jre-alpine'
+	copyFile "demo-0.0.1-SNAPSHOT.jar", "/app/demo-0.0.1-SNAPSHOT.jar"
+	entryPoint 'java'
+	defaultCommand '-jar', "/app/demo-0.0.1-SNAPSHOT.jar"
+	exposePort 8080
+}
+
+task syncWebAppArchive(type: Sync) {
+	dependsOn assemble
+	from bootJar.archiveFile
+	into  createDockerfile.destFile.get().asFile.parentFile
+}
+
+
+createDockerfile.dependsOn syncWebAppArchive
+
+
+
+task buildImage(type: DockerBuildImage) {
+	dependsOn createDockerfile
+	inputDir = createDockerfile.destFile.get().asFile.parentFile
+}
+
+task tagImage(type: DockerTagImage, dependsOn: buildImage) {
+	description "Tag custom docker image."
+
+	targetImageId buildImage.getImageId()
+	repository = "muzimil"
+	tag	 = 'demo-1'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}

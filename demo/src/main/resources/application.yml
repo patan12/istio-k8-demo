@@ -1,0 +1,4 @@
+demo2:
+  name: demo2
+  url: demo-2-app:8080
+  path: /demo2

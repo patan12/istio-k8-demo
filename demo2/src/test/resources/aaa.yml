@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: test-pod-10sec-via-rc1
+  labels:
+    app: pod-label
+spec:
+  template:
+  metadata:
+  name: test-pod-10sec-via-rc1
+  labels:
+    app: feature-pod-label
+  namespace: test-space
+spec:
+  template:
+    spec:
+      containers:
+        - name: main
+          image: ubuntu:latest
+          command: ["bash"]
+          args: ["-xc", "sleep 10"]
+          volumeMounts:
+            - name: in-0
+              mountPath: /in/0
+              readOnly: true
+      volumes:
+        - name: in-0
+          persistentVolumeClaim:
+            claimName: 123-123-123
+            readOnly: true
+      nodeSelector:
+        kubernetes.io/hostname: node1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feature-pod-label
