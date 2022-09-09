@@ -28,7 +28,7 @@ public class HellodockerApplication {
 
   @GetMapping("/getDetails")
   public ResponseEntity<String> get() {
-    log.info("Demo1 req" + LocalDateTime.now());
+    log.info("Demo1-updated req" + LocalDateTime.now());
     return ResponseEntity.ok(
         "Demo1 " + LocalDateTime.now() + " " + demo2Client.getDetails().getBody());
   }

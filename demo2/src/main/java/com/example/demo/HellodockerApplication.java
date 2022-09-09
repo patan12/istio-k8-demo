@@ -26,7 +26,7 @@ public class HellodockerApplication {
   public ResponseEntity<String> get() {
     log.info("Demo2 "+ LocalDateTime.now());
   //  return new ResponseEntity<>("Surprise ", HttpStatus.GATEWAY_TIMEOUT);
-    return ResponseEntity.ok("Demo2 " + LocalDateTime.now());
+    return ResponseEntity.ok("Demo2 updated " + LocalDateTime.now());
   }
 
   @GetMapping("/getDetails/{id}")
